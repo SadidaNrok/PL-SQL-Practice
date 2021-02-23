@@ -8,7 +8,6 @@ BEGIN
     SELECT id, idparent
     BULK COLLECT INTO id_coll, par_coll
     FROM test;
-    
     FOR i IN 1..id_coll.COUNT LOOP
         dbms_output.put_line(id_coll(i)||' '||par_coll(i));
     END LOOP;
@@ -28,6 +27,7 @@ DECLARE
 BEGIN
     OPEN c;
     LOOP
+        -- Чтение по тои записи за раз
         FETCH c BULK COLLECT INTO id_coll, parent_coll LIMIT 3;
         EXIT WHEN id_coll.COUNT = 0;
         FOR i IN 1..id_coll.COUNT LOOP
@@ -36,4 +36,25 @@ BEGIN
             dbms_output.new_line();
         END LOOP;
     END LOOP;
+END;
+
+DECLARE
+    TYPE record_type IS RECORD
+    (id NUMBER, idparent NUMBER, value NUMBER);
+    TYPE collection IS TABLE OF RECORD_TYPE;
+    dataset COLLECTION;
+    CURSOR c IS SELECT * FROM test;
+BEGIN
+    OPEN c;
+    LOOP
+        FETCH c BULK COLLECT INTO dataset LIMIT 3;
+        EXIT WHEN dataset.count = 0;
+        FOR i IN 1..dataset.count LOOP
+            dbms_output.put('ID [' || dataset(i).id || ']');
+            dbms_output.put(' IDPARENT [' || dataset(i).idparent || ']');
+            dbms_output.put(' VALUE [' || dataset(i).value || ']');
+            dbms_output.new_line();
+        END LOOP;
+    END LOOP;
+    CLOSE c;
 END;
